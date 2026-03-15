@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8 Puzzle | Kasudy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            z-index: 100;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #f0f6fc;
+        }
+        
+        .subtitle {
+            color: #8b949e;
+            margin-bottom: 2rem;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 3rem;
+            font-size: 1.2rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #58a6ff;
+        }
+        
+        .stat-label {
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+        
+        .puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 15px;
+            background: #161b22;
+            border-radius: 15px;
+            border: 2px solid #30363d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .tile {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .tile-filled {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: #fff;
+            border: 2px solid #3fb950;
+        }
+        
+        .tile-filled:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%);
+        }
+        
+        .tile-empty {
+            background: #161b22;
+            border: 2px dashed #30363d;
+            cursor: default;
+        }
+        
+        .tile.correct {
+            background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
+            border-color: #58a6ff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        button {
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        
+        .btn-secondary:hover {
+            background: #30363d;
+            transform: translateY(-2px);
+        }
+        
+        .win-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #161b22;
+            border: 2px solid #2ea043;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        .win-message.show {
+            display: block;
+            animation: popIn 0.3s ease;
+        }
+        
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .win-message h2 {
+            font-size: 2rem;
+            color: #3fb950;
+            margin-bottom: 1rem;
+        }
+        
+        .win-message p {
+            color: #8b949e;
+            margin-bottom: 1.5rem;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
+        .instructions {
+            max-width: 500px;
+            background: #161b22;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #30363d;
+        }
+        
+        .instructions h3 {
+            color: #58a6ff;
+            margin-bottom: 1rem;
+        }
+        
+        .instructions ul {
+            color: #8b949e;
+            padding-left: 1.5rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Kasudy</a>
+    
+    <h1>🧩 8 Puzzle</h1>
+    <p class="subtitle">Slide tiles to arrange 1-8 in order</p>
+    
+    <div class="game-container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="moves">0</div>
+                <div class="stat-label">Moves</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="time">0:00</div>
+                <div class="stat-label">Time</div>
+            </div>
+        </div>
+        
+        <div class="puzzle-board" id="board"></div>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="shuffle()">Shuffle</button>
+            <button class="btn-secondary" onclick="reset()">Reset</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <ul>
+                <li>Click/tap a tile adjacent to the empty space to slide it</li>
+                <li>Arrange tiles in order: 1-2-3, 4-5-6, 7-8-□</li>
+                <li>Solve in the fewest moves and fastest time</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    <div class="win-message" id="winMessage">
+        <h2>🎉 You Won!</h2>
+        <p>Solved in <span id="finalMoves">0</span> moves and <span id="finalTime">0:00</span></p>
+        <button class="btn-primary" onclick="closeWin()">Play Again</button>
+    </div>
+    
+    <script>
+        let board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        let moves = 0;
+        let timer = null;
+        let seconds = 0;
+        let gameStarted = false;
+        
+        const winningState = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        
+        function render() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            
+            board.forEach((num, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile ' + (num === 0 ? 'tile-empty' : 'tile-filled');
+                
+                // Check if tile is in correct position
+                if (num !== 0 && num === index + 1) {
+                    tile.classList.add('correct');
+                }
+                
+                tile.textContent = num === 0 ? '' : num;
+                tile.onclick = () => moveTile(index);
+                boardEl.appendChild(tile);
+            });
+            
+            document.getElementById('moves').textContent = moves;
+        }
+        
+        function moveTile(index) {
+            const emptyIndex = board.indexOf(0);
+            const validMoves = [
+                emptyIndex - 3, // up
+                emptyIndex + 3, // down
+                emptyIndex - 1, // left (if not on right edge)
+                emptyIndex + 1  // right (if not on left edge)
+            ];
+            
+            // Check edge cases
+            if (emptyIndex % 3 === 0) validMoves.splice(validMoves.indexOf(emptyIndex - 1), 1);
+            if ((emptyIndex + 1) % 3 === 0) validMoves.splice(validMoves.indexOf(emptyIndex + 1), 1);
+            
+            if (validMoves.includes(index)) {
+                if (!gameStarted) {
+                    startTimer();
+                    gameStarted = true;
+                }
+                
+                [board[index], board[emptyIndex]] = [board[emptyIndex], board[index]];
+                moves++;
+                render();
+                checkWin();
+            }
+        }
+        
+        function shuffle() {
+            // Do random valid moves to ensure solvability
+            board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            moves = 0;
+            seconds = 0;
+            gameStarted = false;
+            stopTimer();
+            document.getElementById('time').textContent = '0:00';
+            
+            let emptyIndex = 8;
+            let lastIndex = -1;
+            
+            for (let i = 0; i < 100; i++) {
+                const validMoves = [];
+                if (emptyIndex >= 3 && lastIndex !== emptyIndex + 3) validMoves.push(emptyIndex - 3);
+                if (emptyIndex <= 5 && lastIndex !== emptyIndex - 3) validMoves.push(emptyIndex + 3);
+                if (emptyIndex % 3 !== 0 && lastIndex !== emptyIndex + 1) validMoves.push(emptyIndex - 1);
+                if ((emptyIndex + 1) % 3 !== 0 && lastIndex !== emptyIndex - 1) validMoves.push(emptyIndex + 1);
+                
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                [board[randomMove], board[emptyIndex]] = [board[emptyIndex], board[randomMove]];
+                lastIndex = emptyIndex;
+                emptyIndex = randomMove;
+            }
+            
+            render();
+        }
+        
+        function reset() {
+            board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            moves = 0;
+            seconds = 0;
+            gameStarted = false;
+            stopTimer();
+            document.getElementById('time').textContent = '0:00';
+            render();
+        }
+        
+        function startTimer() {
+            timer = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('time').textContent = 
+                    `${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timer) clearInterval(timer);
+            timer = null;
+        }
+        
+        function checkWin() {
+            if (JSON.stringify(board) === JSON.stringify(winningState)) {
+                stopTimer();
+                document.getElementById('finalMoves').textContent = moves;
+                document.getElementById('finalTime').textContent = document.getElementById('time').textContent;
+                document.getElementById('overlay').classList.add('show');
+                document.getElementById('winMessage').classList.add('show');
+            }
+        }
+        
+        function closeWin() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('winMessage').classList.remove('show');
+            shuffle();
+        }
+        
+        // Initialize
+        shuffle();
+    </script>
+</body>
+</html>
