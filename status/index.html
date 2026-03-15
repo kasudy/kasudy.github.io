@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status | Kasudy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #f0f6fc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #8b949e;
+        }
+        
+        .overall-status {
+            background: #161b22;
+            border: 2px solid #238636;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .overall-status h2 {
+            font-size: 1.5rem;
+            color: #3fb950;
+            margin-bottom: 0.5rem;
+        }
+        
+        .overall-status p {
+            color: #8b949e;
+        }
+        
+        .services-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .service-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .service-card:hover {
+            transform: translateX(5px);
+            border-color: #58a6ff;
+        }
+        
+        .service-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .service-icon {
+            font-size: 2rem;
+        }
+        
+        .service-name {
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+        
+        .service-url {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-top: 0.25rem;
+        }
+        
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-indicator.online {
+            background: #2ea043;
+        }
+        
+        .status-indicator.offline {
+            background: #da3633;
+        }
+        
+        .status-indicator.degraded {
+            background: #d29922;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .status-label.online { color: #3fb950; }
+        .status-label.offline { color: #da3633; }
+        .status-label.degraded { color: #d29922; }
+        
+        .response-time {
+            font-size: 0.85rem;
+            color: #8b949e;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .uptime {
+            font-size: 0.8rem;
+            color: #8b949e;
+            margin-top: 0.25rem;
+        }
+        
+        .last-check {
+            text-align: center;
+            color: #8b949e;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .refresh-btn {
+            display: block;
+            margin: 2rem auto 0;
+            padding: 0.75rem 2rem;
+            background: #238636;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: #2ea043;
+            transform: translateY(-2px);
+        }
+        
+        .history {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #30363d;
+        }
+        
+        .history h3 {
+            color: #8b949e;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .uptime-bar {
+            display: flex;
+            gap: 3px;
+            margin-top: 1rem;
+        }
+        
+        .uptime-day {
+            flex: 1;
+            height: 30px;
+            border-radius: 3px;
+            background: #238636;
+            transition: background 0.3s;
+        }
+        
+        .uptime-day.down { background: #da3633; }
+        .uptime-day.degraded { background: #d29922; }
+        
+        .uptime-day:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Kasudy</a>
+    
+    <div class="container">
+        <header>
+            <h1>📊 System Status</h1>
+            <p class="subtitle">Real-time monitoring of all services</p>
+        </header>
+        
+        <div class="overall-status">
+            <h2>✓ All Systems Operational</h2>
+            <p>All services are running normally</p>
+        </div>
+        
+        <div class="services-grid" id="servicesGrid">
+            <!-- Services populated by JS -->
+        </div>
+        
+        <div class="history">
+            <h3>📈 30-Day Uptime History</h3>
+            <div class="uptime-bar" id="uptimeBar"></div>
+        </div>
+        
+        <p class="last-check">Last checked: <span id="lastCheck">-</span></p>
+        <button class="refresh-btn" onclick="checkAll()">↻ Refresh Status</button>
+    </div>
+    
+    <script>
+        // Configure your services here
+        const services = [
+            { name: 'GitHub', icon: '🐙', url: 'https://github.com', checkUrl: 'https://github.com' },
+            { name: 'Kasudy.github.io', icon: '🌐', url: 'https://kasudy.github.io', checkUrl: 'https://kasudy.github.io' },
+            { name: 'Google', icon: '🔍', url: 'https://google.com', checkUrl: 'https://google.com' },
+            { name: 'Cloudflare', icon: '☁️', url: 'https://cloudflare.com', checkUrl: 'https://cloudflare.com' },
+        ];
+        
+        async function checkService(service) {
+            const start = performance.now();
+            try {
+                // Use a proxy or direct fetch for CORS
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+                
+                // Try to fetch (may fail due to CORS)
+                await fetch(service.checkUrl, { 
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    mode: 'no-cors'
+                });
+                clearTimeout(timeout);
+                
+                const responseTime = Math.round(performance.now() - start);
+                return { status: 'online', responseTime };
+            } catch (error) {
+                // If fetch fails, assume offline (CORS will cause false negatives)
+                return { status: 'offline', responseTime: null };
+            }
+        }
+        
+        function renderServices() {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = services.map(s => `
+                <div class="service-card" id="service-${s.name.replace(/\s+/g, '-')}">
+                    <div class="service-info">
+                        <span class="service-icon">${s.icon}</span>
+                        <div>
+                            <div class="service-name">${s.name}</div>
+                            <div class="service-url">${s.url}</div>
+                        </div>
+                    </div>
+                    <div class="service-status">
+                        <div class="status-indicator offline" id="indicator-${s.name.replace(/\s+/g, '-')}"></div>
+                        <span class="status-label offline" id="label-${s.name.replace(/\s+/g, '-')}">Checking...</span>
+                        <div class="response-time" id="time-${s.name.replace(/\s+/g, '-')}">-</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function checkAll() {
+            const lastCheck = new Date().toLocaleString();
+            document.getElementById('lastCheck').textContent = lastCheck;
+            
+            for (const service of services) {
+                const id = service.name.replace(/\s+/g, '-');
+                const result = await checkService(service);
+                
+                const indicator = document.getElementById(`indicator-${id}`);
+                const label = document.getElementById(`label-${id}`);
+                const time = document.getElementById(`time-${id}`);
+                
+                indicator.className = `status-indicator ${result.status}`;
+                label.className = `status-label ${result.status}`;
+                label.textContent = result.status === 'online' ? 'Online' : 'Offline';
+                time.textContent = result.responseTime ? `${result.responseTime}ms` : '-';
+            }
+            
+            updateOverallStatus();
+        }
+        
+        function updateOverallStatus() {
+            // Check how many are online
+            let online = 0;
+            services.forEach(s => {
+                const indicator = document.getElementById(`indicator-${s.name.replace(/\s+/g, '-')}`);
+                if (indicator.classList.contains('online')) online++;
+            });
+            
+            const overall = document.querySelector('.overall-status');
+            if (online === services.length) {
+                overall.innerHTML = '<h2>✓ All Systems Operational</h2><p>All services are running normally</p>';
+                overall.style.borderColor = '#238636';
+            } else if (online > 0) {
+                overall.innerHTML = '<h2>⚠ Partial Outage</h2><p>Some services are experiencing issues</p>';
+                overall.style.borderColor = '#d29922';
+            } else {
+                overall.innerHTML = '<h2>✗ Major Outage</h2><p>All services are down</p>';
+                overall.style.borderColor = '#da3633';
+            }
+        }
+        
+        // Generate 30-day uptime history (simulated)
+        function generateUptimeHistory() {
+            const bar = document.getElementById('uptimeBar');
+            let html = '';
+            for (let i = 0; i < 30; i++) {
+                const isDown = Math.random() < 0.05; // 5% downtime
+                const isDegraded = Math.random() < 0.1; // 10% degraded
+                html += `<div class="uptime-day ${isDown ? 'down' : isDegraded ? 'degraded' : ''}" title="Day ${i + 1}"></div>`;
+            }
+            bar.innerHTML = html;
+        }
+        
+        // Initialize
+        renderServices();
+        generateUptimeHistory();
+        checkAll();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(checkAll, 60000);
+    </script>
+</body>
+</html>
