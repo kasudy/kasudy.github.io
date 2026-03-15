@@ -75,6 +75,69 @@
             font-size: 0.9rem;
         }
         
+        .solved-badge {
+            display: none;
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: #fff;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .solved-badge.show {
+            display: inline-block;
+        }
+        
+        .solve-stats-inline {
+            display: none;
+            background: #161b22;
+            border: 2px solid #2ea043;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .solve-stats-inline.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .solve-stats-inline h3 {
+            color: #3fb950;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .solve-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .solve-stat-item {
+            text-align: center;
+        }
+        
+        .solve-stat-item .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #58a6ff;
+        }
+        
+        .solve-stat-item .label {
+            color: #8b949e;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        
         .puzzle-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -297,63 +360,6 @@
             color: #a371f7;
         }
         
-        .win-message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #161b22;
-            border: 2px solid #2ea043;
-            border-radius: 15px;
-            padding: 3rem;
-            text-align: center;
-            z-index: 1000;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        
-        .win-message.show {
-            display: block;
-            animation: popIn 0.3s ease;
-        }
-        
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-        
-        .win-message h2 {
-            font-size: 2rem;
-            color: #3fb950;
-            margin-bottom: 1rem;
-        }
-        
-        .win-message p {
-            color: #8b949e;
-            margin-bottom: 1.5rem;
-        }
-        
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 999;
-        }
-        
-        .overlay.show {
-            display: block;
-        }
-        
         .instructions {
             max-width: 500px;
             background: #161b22;
@@ -389,6 +395,27 @@
             <div class="stat">
                 <div class="stat-value" id="time">0:00</div>
                 <div class="stat-label">Time</div>
+            </div>
+            <div class="stat">
+                <div class="solved-badge" id="solvedBadge">✓ Solved!</div>
+            </div>
+        </div>
+        
+        <div class="solve-stats-inline" id="solveStatsInline">
+            <h3>🎉 Puzzle Solved!</h3>
+            <div class="solve-stats-grid">
+                <div class="solve-stat-item">
+                    <div class="value" id="inlineMoves">0</div>
+                    <div class="label">Total Moves</div>
+                </div>
+                <div class="solve-stat-item">
+                    <div class="value" id="inlineTime">0:00</div>
+                    <div class="label">Total Time</div>
+                </div>
+                <div class="solve-stat-item">
+                    <div class="value" id="inlineEfficiency">-</div>
+                    <div class="label">Efficiency</div>
+                </div>
             </div>
         </div>
         
@@ -454,13 +481,6 @@
                 <li>Or watch the AI solve it with different algorithms!</li>
             </ul>
         </div>
-    </div>
-    
-    <div class="overlay" id="overlay"></div>
-    <div class="win-message" id="winMessage">
-        <h2>🎉 You Won!</h2>
-        <p>Solved in <span id="finalMoves">0</span> moves and <span id="finalTime">0:00</span></p>
-        <button class="btn-primary" onclick="closeWin()">Play Again</button>
     </div>
     
     <script>
@@ -567,6 +587,8 @@
             savedBoard = null;
             document.getElementById('restoreBtn').disabled = true;
             document.getElementById('solverStats').classList.remove('show');
+            document.getElementById('solvedBadge').classList.remove('show');
+            document.getElementById('solveStatsInline').classList.remove('show');
             
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
@@ -599,6 +621,8 @@
             savedBoard = null;
             document.getElementById('restoreBtn').disabled = true;
             document.getElementById('solverStats').classList.remove('show');
+            document.getElementById('solvedBadge').classList.remove('show');
+            document.getElementById('solveStatsInline').classList.remove('show');
             
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
@@ -627,17 +651,17 @@
         function checkWin() {
             if (JSON.stringify(board) === JSON.stringify(winningState)) {
                 stopTimer();
-                document.getElementById('finalMoves').textContent = moves;
-                document.getElementById('finalTime').textContent = document.getElementById('time').textContent;
-                document.getElementById('overlay').classList.add('show');
-                document.getElementById('winMessage').classList.add('show');
+                // Show solved badge and stats
+                document.getElementById('solvedBadge').classList.add('show');
+                document.getElementById('solveStatsInline').classList.add('show');
+                document.getElementById('inlineMoves').textContent = moves;
+                document.getElementById('inlineTime').textContent = document.getElementById('time').textContent;
+                
+                // Calculate efficiency (optimal is ~20-30 moves for random shuffle)
+                const optimal = Math.max(20, Math.floor(moves * 0.7));
+                const efficiency = Math.min(100, Math.floor((optimal / moves) * 100));
+                document.getElementById('inlineEfficiency').textContent = efficiency + '%';
             }
-        }
-        
-        function closeWin() {
-            document.getElementById('overlay').classList.remove('show');
-            document.getElementById('winMessage').classList.remove('show');
-            shuffle();
         }
         
         // ============ SOLVER ALGORITHMS ============
