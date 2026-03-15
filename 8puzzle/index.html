@@ -96,7 +96,7 @@
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             user-select: none;
         }
         
@@ -123,8 +123,8 @@
         }
         
         .tile.solving {
-            background: linear-gradient(135deg, #a371f7 0%, #b989ff 100%);
-            border-color: #c084fc;
+            background: linear-gradient(135deg, #a371f7 0%, #b989ff 100%) !important;
+            border-color: #c084fc !important;
             animation: glow 0.5s ease-in-out infinite alternate;
         }
         
@@ -187,6 +187,16 @@
             transform: none;
         }
         
+        .btn-restore {
+            background: linear-gradient(135deg, #d29922 0%, #e3a008 100%);
+            color: #000;
+        }
+        
+        .btn-restore:hover {
+            background: linear-gradient(135deg, #e3a008 0%, #f0b10a 100%);
+            transform: translateY(-2px);
+        }
+        
         .solver-section {
             background: #161b22;
             border: 1px solid #30363d;
@@ -234,6 +244,15 @@
         input[type="range"] {
             flex: 1;
             accent-color: #a371f7;
+            height: 8px;
+        }
+        
+        .speed-labels {
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 0.75rem;
+            margin-top: -0.5rem;
         }
         
         .solver-stats {
@@ -378,7 +397,8 @@
         <div class="controls">
             <button class="btn-primary" onclick="shuffle()">Shuffle</button>
             <button class="btn-secondary" onclick="reset()">Reset</button>
-            <button class="btn-solve" id="solveBtn" onclick="startSolve()">🤖 Auto Solve</button>
+            <button class="btn-restore" id="restoreBtn" onclick="restore()" disabled>↩ Restore</button>
+            <button class="btn-solve" id="solveBtn" onclick="toggleSolve()">🤖 Auto Solve</button>
         </div>
         
         <div class="solver-section">
@@ -395,7 +415,11 @@
                 </div>
                 <div class="solver-row">
                     <label>Speed:</label>
-                    <input type="range" id="speed" min="1" max="20" value="10">
+                    <input type="range" id="speed" min="1" max="10" value="5">
+                </div>
+                <div class="speed-labels">
+                    <span>Slow</span>
+                    <span>Fast</span>
                 </div>
                 <div class="algorithm-info" id="algoInfo">
                     <strong>A* Manhattan:</strong> Uses distance each tile is from its goal position. Guarantees optimal solution.
@@ -441,6 +465,7 @@
     
     <script>
         let board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        let savedBoard = null;  // For restore functionality
         let moves = 0;
         let timer = null;
         let seconds = 0;
@@ -503,10 +528,10 @@
         
         function getValidMoves(emptyIndex) {
             const moves = [
-                emptyIndex - 3, // up
-                emptyIndex + 3, // down
-                emptyIndex - 1, // left
-                emptyIndex + 1  // right
+                emptyIndex - 3,
+                emptyIndex + 3,
+                emptyIndex - 1,
+                emptyIndex + 1
             ];
             
             if (emptyIndex % 3 === 0) {
@@ -521,15 +546,34 @@
             return moves;
         }
         
+        function saveState() {
+            savedBoard = [...board];
+            document.getElementById('restoreBtn').disabled = false;
+        }
+        
+        function restore() {
+            if (savedBoard) {
+                stopSolve();
+                board = [...savedBoard];
+                savedBoard = null;
+                document.getElementById('restoreBtn').disabled = true;
+                document.getElementById('solverStats').classList.remove('show');
+                render();
+            }
+        }
+        
         function shuffle() {
             stopSolve();
+            savedBoard = null;
+            document.getElementById('restoreBtn').disabled = true;
+            document.getElementById('solverStats').classList.remove('show');
+            
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
             seconds = 0;
             gameStarted = false;
             stopTimer();
             document.getElementById('time').textContent = '0:00';
-            document.getElementById('solverStats').classList.remove('show');
             
             let emptyIndex = 8;
             let lastIndex = -1;
@@ -552,13 +596,16 @@
         
         function reset() {
             stopSolve();
+            savedBoard = null;
+            document.getElementById('restoreBtn').disabled = true;
+            document.getElementById('solverStats').classList.remove('show');
+            
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
             seconds = 0;
             gameStarted = false;
             stopTimer();
             document.getElementById('time').textContent = '0:00';
-            document.getElementById('solverStats').classList.remove('show');
             render();
         }
         
@@ -722,14 +769,23 @@
             return null;
         }
         
-        function startSolve() {
+        function toggleSolve() {
             if (isSolving) {
                 stopSolve();
-                return;
+            } else {
+                startSolve();
             }
+        }
+        
+        function startSolve() {
+            if (isSolving) return;
+            
+            // Save current state for restore
+            saveState();
             
             const algo = document.getElementById('algorithm').value;
-            const speed = 21 - document.getElementById('speed').value; // Invert for faster = lower ms
+            const speedVal = parseInt(document.getElementById('speed').value);
+            const delay = 600 - (speedVal * 50); // 550ms to 100ms per move
             
             let result;
             const startTime = performance.now();
@@ -772,8 +828,8 @@
             let step = 0;
             const solutionPath = result.path;
             
-            solveInterval = setInterval(() => {
-                if (step >= solutionPath.length) {
+            function animateStep() {
+                if (step >= solutionPath.length || !isSolving) {
                     stopSolve();
                     checkWin();
                     return;
@@ -784,25 +840,36 @@
                 
                 // Highlight the moving tile
                 const tiles = document.querySelectorAll('.tile');
+                tiles.forEach(t => t.classList.remove('solving'));
                 tiles[moveIdx].classList.add('solving');
                 
-                moveTile(moveIdx, true);
-                
-                setTimeout(() => {
-                    tiles[moveIdx].classList.remove('solving');
-                }, speed);
+                // Make the move and update move counter
+                [board[moveIdx], board[emptyIdx]] = [board[emptyIdx], board[moveIdx]];
+                moves++;
+                render();
                 
                 step++;
-            }, speed * 2);
+                
+                // Schedule next move
+                solveInterval = setTimeout(animateStep, delay);
+            }
+            
+            animateStep();
         }
         
         function stopSolve() {
-            if (solveInterval) clearInterval(solveInterval);
-            solveInterval = null;
+            if (solveInterval) {
+                clearTimeout(solveInterval);
+                solveInterval = null;
+            }
             isSolving = false;
             document.getElementById('solveBtn').textContent = '🤖 Auto Solve';
             document.getElementById('solveBtn').classList.add('btn-solve');
             document.getElementById('solveBtn').classList.remove('btn-secondary');
+            
+            // Remove solving highlight
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(t => t.classList.remove('solving'));
         }
         
         // Initialize
