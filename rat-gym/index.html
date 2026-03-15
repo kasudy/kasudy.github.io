@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rat Gym | Private Pod Training</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: 
+                linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff6b35 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0,0,0,0.1) 10px,
+                    rgba(0,0,0,0.1) 20px
+                );
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .hero h1 {
+            font-size: 5rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 4px 4px 0 #000;
+        }
+        
+        .hero .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #000;
+            color: #ff6b35;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 3px solid #000;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            background: #ff6b35;
+            color: #000;
+        }
+        
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 2px solid #333;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            border-color: #ff6b35;
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+        }
+        
+        .feature-card p {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        
+        .booking {
+            background: #1a1a1a;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .booking h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+        
+        .pricing {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .price-card {
+            background: #0a0a0a;
+            border: 2px solid #ff6b35;
+            padding: 2rem;
+            border-radius: 10px;
+            min-width: 250px;
+        }
+        
+        .price-card h3 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .price span {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #000;
+            color: #666;
+        }
+        
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+        
+        .back-link:hover {
+            background: rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back</a>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <div class="logo">🐀</div>
+            <h1>Rat Gym</h1>
+            <p class="tagline">Your Private Pod. Your Workout. No Crowds.</p>
+            <a href="#booking" class="cta-button">Book Your Pod</a>
+        </div>
+    </section>
+    
+    <section class="features">
+        <h2>Why Rat Gym?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Private Pods</h3>
+                <p>Your own dedicated space. No waiting for equipment. No awkward eye contact. Just you and the weights.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>24/7 Access</h3>
+                <p>Book any time, day or night. Your pod is ready when you are. No excuses.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎵</div>
+                <h3>Your Playlist</h3>
+                <p>Connect your music. Control the vibe. No gym radio, no ads, just your motivation.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🚿</div>
+                <h3>Private Shower</h3>
+                <p>Each pod includes a private shower and changing area. Clean up in peace.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>App Control</h3>
+                <p>Book, unlock, and control your pod from your phone. Seamless experience.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💪</div>
+                <h3>Full Equipment</h3>
+                <p>Rack, bench, dumbbells, cable machine, and cardio. Everything you need.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="booking" id="booking">
+        <h2>Simple Pricing</h2>
+        
+        <div class="pricing">
+            <div class="price-card">
+                <h3>Single Session</h3>
+                <div class="price">£15<span>/session</span></div>
+                <p>60 minutes private pod access</p>
+            </div>
+            
+            <div class="price-card">
+                <h3>Monthly</h3>
+                <div class="price">£99<span>/month</span></div>
+                <p>Unlimited sessions</p>
+            </div>
+            
+            <div class="price-card">
+                <h3>Rat Pack</h3>
+                <div class="price">£149<span>/month</span></div>
+                <p>Unlimited + guest passes</p>
+            </div>
+        </div>
+        
+        <br><br>
+        <a href="#" class="cta-button">Get Started</a>
+    </section>
+    
+    <footer>
+        <p>Rat Gym © 2025 | Demo Project by Kasudy</p>
+    </footer>
+</body>
+</html>
