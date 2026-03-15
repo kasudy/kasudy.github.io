@@ -122,9 +122,22 @@
             border-color: #58a6ff;
         }
         
+        .tile.solving {
+            background: linear-gradient(135deg, #a371f7 0%, #b989ff 100%);
+            border-color: #c084fc;
+            animation: glow 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #a371f7; }
+            to { box-shadow: 0 0 20px #b989ff; }
+        }
+        
         .controls {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         button {
@@ -156,6 +169,113 @@
         .btn-secondary:hover {
             background: #30363d;
             transform: translateY(-2px);
+        }
+        
+        .btn-solve {
+            background: linear-gradient(135deg, #a371f7 0%, #b989ff 100%);
+            color: #fff;
+        }
+        
+        .btn-solve:hover {
+            background: linear-gradient(135deg, #b989ff 0%, #c084fc 100%);
+            transform: translateY(-2px);
+        }
+        
+        .btn-solve:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .solver-section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .solver-section h3 {
+            color: #a371f7;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .solver-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .solver-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .solver-row label {
+            color: #8b949e;
+            min-width: 80px;
+        }
+        
+        select {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 1rem;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            accent-color: #a371f7;
+        }
+        
+        .solver-stats {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #0d1117;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .solver-stats.show {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .solver-stat {
+            text-align: center;
+        }
+        
+        .solver-stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #a371f7;
+        }
+        
+        .solver-stat-label {
+            color: #8b949e;
+            font-size: 0.8rem;
+        }
+        
+        .algorithm-info {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #21262d;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+        
+        .algorithm-info strong {
+            color: #a371f7;
         }
         
         .win-message {
@@ -258,6 +378,47 @@
         <div class="controls">
             <button class="btn-primary" onclick="shuffle()">Shuffle</button>
             <button class="btn-secondary" onclick="reset()">Reset</button>
+            <button class="btn-solve" id="solveBtn" onclick="startSolve()">🤖 Auto Solve</button>
+        </div>
+        
+        <div class="solver-section">
+            <h3>🧠 AI Solver</h3>
+            <div class="solver-controls">
+                <div class="solver-row">
+                    <label>Algorithm:</label>
+                    <select id="algorithm" onchange="updateAlgoInfo()">
+                        <option value="astar-manhattan">A* Manhattan (Optimal)</option>
+                        <option value="astar-misplaced">A* Misplaced Tiles</option>
+                        <option value="bfs">Breadth-First Search</option>
+                        <option value="greedy">Greedy Best-First</option>
+                    </select>
+                </div>
+                <div class="solver-row">
+                    <label>Speed:</label>
+                    <input type="range" id="speed" min="1" max="20" value="10">
+                </div>
+                <div class="algorithm-info" id="algoInfo">
+                    <strong>A* Manhattan:</strong> Uses distance each tile is from its goal position. Guarantees optimal solution.
+                </div>
+                <div class="solver-stats" id="solverStats">
+                    <div class="solver-stat">
+                        <div class="solver-stat-value" id="statNodes">0</div>
+                        <div class="solver-stat-label">Nodes Explored</div>
+                    </div>
+                    <div class="solver-stat">
+                        <div class="solver-stat-value" id="statPath">0</div>
+                        <div class="solver-stat-label">Solution Length</div>
+                    </div>
+                    <div class="solver-stat">
+                        <div class="solver-stat-value" id="statTime">0ms</div>
+                        <div class="solver-stat-label">Solve Time</div>
+                    </div>
+                    <div class="solver-stat">
+                        <div class="solver-stat-value" id="statOptimal">-</div>
+                        <div class="solver-stat-label">Optimal?</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="instructions">
@@ -266,6 +427,7 @@
                 <li>Click/tap a tile adjacent to the empty space to slide it</li>
                 <li>Arrange tiles in order: 1-2-3, 4-5-6, 7-8-□</li>
                 <li>Solve in the fewest moves and fastest time</li>
+                <li>Or watch the AI solve it with different algorithms!</li>
             </ul>
         </div>
     </div>
@@ -283,8 +445,22 @@
         let timer = null;
         let seconds = 0;
         let gameStarted = false;
+        let isSolving = false;
+        let solveInterval = null;
         
         const winningState = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        
+        const algoInfo = {
+            'astar-manhattan': '<strong>A* Manhattan:</strong> Uses distance each tile is from its goal position. Guarantees optimal solution.',
+            'astar-misplaced': '<strong>A* Misplaced:</strong> Counts tiles not in goal position. Faster but may explore more nodes.',
+            'bfs': '<strong>Breadth-First:</strong> Explores all states level by level. Guarantees optimal but memory intensive.',
+            'greedy': '<strong>Greedy:</strong> Always picks best-looking move. Fast but not guaranteed optimal.'
+        };
+        
+        function updateAlgoInfo() {
+            const algo = document.getElementById('algorithm').value;
+            document.getElementById('algoInfo').innerHTML = algoInfo[algo];
+        }
         
         function render() {
             const boardEl = document.getElementById('board');
@@ -294,7 +470,6 @@
                 const tile = document.createElement('div');
                 tile.className = 'tile ' + (num === 0 ? 'tile-empty' : 'tile-filled');
                 
-                // Check if tile is in correct position
                 if (num !== 0 && num === index + 1) {
                     tile.classList.add('correct');
                 }
@@ -307,40 +482,54 @@
             document.getElementById('moves').textContent = moves;
         }
         
-        function moveTile(index) {
+        function moveTile(index, isSolve = false) {
             const emptyIndex = board.indexOf(0);
-            const validMoves = [
-                emptyIndex - 3, // up
-                emptyIndex + 3, // down
-                emptyIndex - 1, // left (if not on right edge)
-                emptyIndex + 1  // right (if not on left edge)
-            ];
-            
-            // Check edge cases
-            if (emptyIndex % 3 === 0) validMoves.splice(validMoves.indexOf(emptyIndex - 1), 1);
-            if ((emptyIndex + 1) % 3 === 0) validMoves.splice(validMoves.indexOf(emptyIndex + 1), 1);
+            const validMoves = getValidMoves(emptyIndex);
             
             if (validMoves.includes(index)) {
-                if (!gameStarted) {
+                if (!gameStarted && !isSolve) {
                     startTimer();
                     gameStarted = true;
                 }
                 
                 [board[index], board[emptyIndex]] = [board[emptyIndex], board[index]];
-                moves++;
+                if (!isSolve) moves++;
                 render();
-                checkWin();
+                if (!isSolve) checkWin();
+                return true;
             }
+            return false;
+        }
+        
+        function getValidMoves(emptyIndex) {
+            const moves = [
+                emptyIndex - 3, // up
+                emptyIndex + 3, // down
+                emptyIndex - 1, // left
+                emptyIndex + 1  // right
+            ];
+            
+            if (emptyIndex % 3 === 0) {
+                const leftIdx = moves.indexOf(emptyIndex - 1);
+                if (leftIdx > -1) moves.splice(leftIdx, 1);
+            }
+            if ((emptyIndex + 1) % 3 === 0) {
+                const rightIdx = moves.indexOf(emptyIndex + 1);
+                if (rightIdx > -1) moves.splice(rightIdx, 1);
+            }
+            
+            return moves;
         }
         
         function shuffle() {
-            // Do random valid moves to ensure solvability
+            stopSolve();
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
             seconds = 0;
             gameStarted = false;
             stopTimer();
             document.getElementById('time').textContent = '0:00';
+            document.getElementById('solverStats').classList.remove('show');
             
             let emptyIndex = 8;
             let lastIndex = -1;
@@ -362,12 +551,14 @@
         }
         
         function reset() {
+            stopSolve();
             board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             moves = 0;
             seconds = 0;
             gameStarted = false;
             stopTimer();
             document.getElementById('time').textContent = '0:00';
+            document.getElementById('solverStats').classList.remove('show');
             render();
         }
         
@@ -400,6 +591,218 @@
             document.getElementById('overlay').classList.remove('show');
             document.getElementById('winMessage').classList.remove('show');
             shuffle();
+        }
+        
+        // ============ SOLVER ALGORITHMS ============
+        
+        function getHeuristic(state, type) {
+            if (type === 'manhattan') {
+                let dist = 0;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] === 0) continue;
+                    const goalPos = state[i] - 1;
+                    const currRow = Math.floor(i / 3), currCol = i % 3;
+                    const goalRow = Math.floor(goalPos / 3), goalCol = goalPos % 3;
+                    dist += Math.abs(currRow - goalRow) + Math.abs(currCol - goalCol);
+                }
+                return dist;
+            } else if (type === 'misplaced') {
+                let count = 0;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] !== 0 && state[i] !== i + 1) count++;
+                }
+                return count;
+            }
+            return 0;
+        }
+        
+        function getStateKey(state) {
+            return state.join('');
+        }
+        
+        function solveBFS(startState) {
+            const queue = [[startState, []]];
+            const visited = new Set([getStateKey(startState)]);
+            let nodesExplored = 0;
+            
+            while (queue.length > 0) {
+                const [state, path] = queue.shift();
+                nodesExplored++;
+                
+                if (JSON.stringify(state) === JSON.stringify(winningState)) {
+                    return { path, nodesExplored, optimal: true };
+                }
+                
+                const emptyIdx = state.indexOf(0);
+                const validMoves = getValidMoves(emptyIdx);
+                
+                for (const moveIdx of validMoves) {
+                    const newState = [...state];
+                    [newState[moveIdx], newState[emptyIdx]] = [newState[emptyIdx], newState[moveIdx]];
+                    const key = getStateKey(newState);
+                    
+                    if (!visited.has(key)) {
+                        visited.add(key);
+                        queue.push([newState, [...path, moveIdx]]);
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function solveAStar(startState, heuristicType) {
+            const openSet = [{ state: startState, path: [], g: 0, h: getHeuristic(startState, heuristicType) }];
+            const visited = new Map([[getStateKey(startState), 0]]);
+            let nodesExplored = 0;
+            
+            while (openSet.length > 0) {
+                openSet.sort((a, b) => (a.g + a.h) - (b.g + b.h));
+                const current = openSet.shift();
+                nodesExplored++;
+                
+                if (JSON.stringify(current.state) === JSON.stringify(winningState)) {
+                    return { path: current.path, nodesExplored, optimal: true };
+                }
+                
+                const emptyIdx = current.state.indexOf(0);
+                const validMoves = getValidMoves(emptyIdx);
+                
+                for (const moveIdx of validMoves) {
+                    const newState = [...current.state];
+                    [newState[moveIdx], newState[emptyIdx]] = [newState[emptyIdx], newState[moveIdx]];
+                    const newG = current.g + 1;
+                    const key = getStateKey(newState);
+                    
+                    if (!visited.has(key) || newG < visited.get(key)) {
+                        visited.set(key, newG);
+                        openSet.push({
+                            state: newState,
+                            path: [...current.path, moveIdx],
+                            g: newG,
+                            h: getHeuristic(newState, heuristicType)
+                        });
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function solveGreedy(startState, heuristicType) {
+            const openSet = [{ state: startState, path: [], h: getHeuristic(startState, heuristicType) }];
+            const visited = new Set([getStateKey(startState)]);
+            let nodesExplored = 0;
+            
+            while (openSet.length > 0) {
+                openSet.sort((a, b) => a.h - b.h);
+                const current = openSet.shift();
+                nodesExplored++;
+                
+                if (JSON.stringify(current.state) === JSON.stringify(winningState)) {
+                    return { path: current.path, nodesExplored, optimal: false };
+                }
+                
+                const emptyIdx = current.state.indexOf(0);
+                const validMoves = getValidMoves(emptyIdx);
+                
+                for (const moveIdx of validMoves) {
+                    const newState = [...current.state];
+                    [newState[moveIdx], newState[emptyIdx]] = [newState[emptyIdx], newState[moveIdx]];
+                    const key = getStateKey(newState);
+                    
+                    if (!visited.has(key)) {
+                        visited.add(key);
+                        openSet.push({
+                            state: newState,
+                            path: [...current.path, moveIdx],
+                            h: getHeuristic(newState, heuristicType)
+                        });
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function startSolve() {
+            if (isSolving) {
+                stopSolve();
+                return;
+            }
+            
+            const algo = document.getElementById('algorithm').value;
+            const speed = 21 - document.getElementById('speed').value; // Invert for faster = lower ms
+            
+            let result;
+            const startTime = performance.now();
+            
+            switch (algo) {
+                case 'bfs':
+                    result = solveBFS([...board]);
+                    break;
+                case 'astar-manhattan':
+                    result = solveAStar([...board], 'manhattan');
+                    break;
+                case 'astar-misplaced':
+                    result = solveAStar([...board], 'misplaced');
+                    break;
+                case 'greedy':
+                    result = solveGreedy([...board], 'manhattan');
+                    break;
+            }
+            
+            const solveTime = performance.now() - startTime;
+            
+            if (!result) {
+                alert('No solution found!');
+                return;
+            }
+            
+            // Show stats
+            document.getElementById('statNodes').textContent = result.nodesExplored.toLocaleString();
+            document.getElementById('statPath').textContent = result.path.length;
+            document.getElementById('statTime').textContent = solveTime.toFixed(1) + 'ms';
+            document.getElementById('statOptimal').textContent = result.optimal ? 'Yes ✓' : 'No';
+            document.getElementById('solverStats').classList.add('show');
+            
+            // Animate solution
+            isSolving = true;
+            document.getElementById('solveBtn').textContent = '⏹ Stop';
+            document.getElementById('solveBtn').classList.remove('btn-solve');
+            document.getElementById('solveBtn').classList.add('btn-secondary');
+            
+            let step = 0;
+            const solutionPath = result.path;
+            
+            solveInterval = setInterval(() => {
+                if (step >= solutionPath.length) {
+                    stopSolve();
+                    checkWin();
+                    return;
+                }
+                
+                const moveIdx = solutionPath[step];
+                const emptyIdx = board.indexOf(0);
+                
+                // Highlight the moving tile
+                const tiles = document.querySelectorAll('.tile');
+                tiles[moveIdx].classList.add('solving');
+                
+                moveTile(moveIdx, true);
+                
+                setTimeout(() => {
+                    tiles[moveIdx].classList.remove('solving');
+                }, speed);
+                
+                step++;
+            }, speed * 2);
+        }
+        
+        function stopSolve() {
+            if (solveInterval) clearInterval(solveInterval);
+            solveInterval = null;
+            isSolving = false;
+            document.getElementById('solveBtn').textContent = '🤖 Auto Solve';
+            document.getElementById('solveBtn').classList.add('btn-solve');
+            document.getElementById('solveBtn').classList.remove('btn-secondary');
         }
         
         // Initialize
