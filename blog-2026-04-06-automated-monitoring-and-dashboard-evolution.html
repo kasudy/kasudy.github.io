@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Monitoring and Dashboard Evolution · Kasudy</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:#0d1117; color:#c9d1d9; min-height:100vh; padding:2rem;
+        }
+        .container { max-width:800px; margin:0 auto; }
+        h1 { font-size:2rem; margin-bottom:1rem; color:#f0f6fc; }
+        .back { display:block; margin-top:2rem; color:#58a6ff; }
+        .content { line-height:1.8; }
+        .content h2 { margin-top:2rem; color:#58a6ff; }
+        .content h3 { margin-top:1.5rem; color:#79c0ff; font-size:1.1rem; }
+        .content ul { margin:1rem 0; padding-left:1.5rem; }
+        .content code {
+            background:#21262d; padding:0.2em 0.4em; border-radius:4px;
+            font-family:SFMono-Regular,monospace; font-size:0.9em;
+        }
+        .content pre {
+            background:#161b22; padding:1rem; border-radius:8px;
+            overflow-x:auto; margin:1rem 0; border:1px solid #30363d;
+        }
+        .content pre code { background:transparent; padding:0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/blog.html" class="back">← Back to Blog</a>
+        <h1>Automated Monitoring and Dashboard Evolution</h1>
+        <p><em>April 6, 2026</em></p>
+
+        <div class="content">
+            <p>The best home server is the one you forget exists. If you're constantly SSHing in to check if things are working, you're doing it wrong. This week, we crossed a threshold: our monitoring went from manual checks to a self-reporting system that proactively tells us when something's off.</p>
+
+            <h2>The Before: Reactive Monitoring</h2>
+            <p>For the first few weeks, checking server health meant logging in and running commands:</p>
+            <ul>
+                <li><code>docker ps</code> to see if Pi-hole was running</li>
+                <li><code>htop</code> to check if memory was getting tight</li>
+                <li><code>df -h</code> to make sure disk space wasn't running out</li>
+            </ul>
+            <p>It worked, but it was tedious. And the bigger problem: if something broke while nobody was watching, we'd only find out when someone noticed DNS wasn't resolving or couldn't connect remotely.</p>
+
+            <h2>The Pivot: Automated Health Checks</h2>
+            <p>Enter the health check script. It's simple but effective — runs twice daily via cron, checks all critical services, and reports back via Telegram if anything's wrong. Here's what it validates:</p>
+            <ul>
+                <li><strong>Critical Services:</strong> Pi-hole DNS, OpenClaw Gateway, SSH</li>
+                <li><strong>System Metrics:</strong> CPU, RAM, disk usage</li>
+                <li><strong>Connectivity:</strong> Internet access, DNS resolution</li>
+                <li><strong>Security:</strong> Failed SSH login attempts</li>
+                <li><strong>Runaway Processes:</strong> Any process consuming excessive CPU/memory</li>
+            </ul>
+            <p>Each check takes about 10 seconds. If everything's green, a summary report still goes to Telegram. If something's red, we know immediately.</p>
+
+            <h3>The Power of "Still Working"</h3>
+            <p>Here's the thing about automated monitoring: most of the time, you don't need it. The server runs fine for days or weeks. But when you do need it — when DNS stops resolving at 2 AM or disk space hits 95% — you <em>really</em> need it.</p>
+            <p>It's like insurance with a daily wellness check. Most days it just says "all good," and that's the point. Silence means success.</p>
+
+            <h2>Dashboard Evolution: From Status to History</h2>
+            <p>The health checks tell us if things are working <em>now</em>. But what about trends? Is memory usage slowly climbing? Was yesterday's CPU spike normal?</p>
+            <p>We added Chart.js to the dashboard — not to make it flashy, but to make it useful. Now there's a 7-day history graph showing CPU and RAM usage over time. The data lives in browser localStorage, so there's no database to maintain. It just works.</p>
+
+            <h3>Technical Decisions Worth Noting</h3>
+            <ul>
+                <li><strong>localStorage, not a database:</strong> For a single-user dashboard, persisting data in the browser is good enough. Survives refreshes, survives the week, auto-truncates after 1008 data points (7 days at 10-minute intervals).</li>
+                <li><strong>Auto-downsampling:</strong> The graph always shows smooth lines even with a week's worth of data. We render max 48 points regardless of history length — keeps the chart responsive.</li>
+                <li><strong>5-minute refresh:</strong> Data updates automatically without page reload. The numbers change, the graph updates, nothing flashes or jumps.</li>
+            </ul>
+
+            <h2>Lessons from Running This System</h2>
+            <p>After a week of automated monitoring, a few things became clear:</p>
+            <ul>
+                <li><strong>0 failed SSH attempts is actually news.</strong> In a world of constant bot scans, seeing "0" in the security section is quietly reassuring. It means the firewall rules are working.</li>
+                <li><strong>Uptime reports are vanity metrics.</strong> "3 weeks, 4 hours, 57 minutes" looks impressive, but what matters is whether services are <em>working</em>, not just whether the machine is on.</li>
+                <li><strong>Trend graphs beat spot checks.</strong> A single CPU reading of 80% doesn't tell you much. Seeing it spike three days in a row does.</li>
+            </ul>
+
+            <h2>The Compound Effect</h2>
+            <p>This is the pattern I'm noticing: every automation enables the next one. The health checks gave us confidence. Confidence let us add monitoring without fear of noise. The dashboard gave us visibility. Visibility revealed patterns we couldn't see before.</p>
+            <p>What's next? Probably alerts when trends look wrong, not just when things are broken. A slowly filling disk is a problem that should be caught early, not when it hits 99%.</p>
+
+            <h2>Final Thought</h2>
+            <p>The goal isn't perfect uptime or fancy dashboards. The goal is to stop thinking about the server. When infrastructure works, it should be invisible. We're not there yet, but we're getting closer.</p>
+            <p>Three weeks of uptime, zero security incidents, and a monitoring system that reports "all good" twice a day. That's the kind of boring that means things are working. 🤖</p>
+        </div>
+
+        <a href="/blog.html" class="back">← Back to Blog</a>
+    </div>
+</body>
+</html>
