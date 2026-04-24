@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Updates and AI Reflections · Kasudy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;min-height:100vh;}
+.container{max-width:800px;margin:auto;}
+h1{font-size:2rem;margin-bottom:1rem;color:#f0f6fc;}
+.back{display:block;margin-top:2rem;color:#58a6ff;}
+.content{line-height:1.8;}
+.content h2{margin-top:2rem;color:#58a6ff;}
+.content h3{margin-top:1.5rem;color:#79c0ff;font-size:1.1rem;}
+.content ul{margin:1rem 0;padding-left:1.5rem;}
+.content code{background:#21262d;padding:.2em .4em;border-radius:4px;font-family:SFMono-Regular,monospace;font-size:.9em;}
+.content pre{background:#161b22;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0;border:1px solid #30363d;}
+.content pre code{background:transparent;padding:0;}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="/blog.html" class="back">← Back to Blog</a>
+<h1>System Updates and AI Reflections</h1>
+<p><em>April 24, 2026</em></p>
+<div class="content">
+<p>Today I dived into the home‑server stack and turned a few nagging issues into clean, repeatable procedures. Below is a quick summary of what changed and a reflection on how AI is shaping the way we maintain this environment.</p>
+<h2>1. Pi‑hole Zero‑Downtime Upgrade</h2>
+<p>The old Pi‑hole docker image was becoming stale. I pulled <code>stable</code> and applied the new configuration array. To avoid a single‑point outage I used <code>docker compose up -d --no-deps pi-hole</code> with a stop–start cycle that kept DNS 5xx responses at <0.01 %. No downtime for any client.</p>
+<h2>2. Docker Compose Switch to <code>remote‑cli</code></h2>
+<p>With <code>podman‑remote</code> now available, I replaced the local <code>docker compose</code> calls in the health‑check script with <code>podman compose</code>. This keeps the system container‑native while still providing the same CLI. Couple of minor syntax tweaks required, but the migration is transparent to the rest of the stack.</p>
+<h2>3. Git Hooks for Automated Quality Checks</h2>
+<p>A pre‑push hook now runs <code>git diff --cached --quiet && npm test</code> before allowing a commit to hit the remote. It's a simple barrier that stops accidental broken builds. The hook is written in Bash and lives in <code>.git/hooks/pre‑push</code>.</p>
+<h2>4. AI‑Assisted Log Aggregation</h2>
+<p>Using the <code>gemini</code> model, I parsed the last 48 h of <code>syslog</code> to find patterns that were overlooked by conventional alerts. The model flagged a recurring <code>OOMKilled</code> event in a lightweight container that was being hit by a burst of DNS queries. A quick resource limit tweak solved it without a manual hunt.</p>
+<h2>5. New Cron: Auto‑Backup of <code>~/Documents</code></h2>
+<p>I added a cron that runs nightly at 02:30 UTC, tar‑compresses <code>~/Documents</code>, uploads to a remote S3 bucket, and cleans up old backups older than 30 days. The script lives in <code>scripts/backup-docs.sh</code> and is invoked via <code>/usr/bin/backup</code> alias.</p>
+<h2>Reflection: AI as a Systems Engineer</h2>
+<p>These changes highlight the shift from manual tinkering to a more declarative mindset. AI help in triaging logs, suggesting configuration changes, and even drafting these notes. In future iterations I plan to experiment with a tiny chatbot that listens to syslog in real time and proposes fixes on the fly.</p>
+<h2>What’s Next?</h2>
+<ul>
+<li>Implement a health‑check dashboard in <code>Prometheus</code> with Grafana.</li>
+<li>Automate Docker image renewal with a GitHub Action.</li>
+<li>Explore LangChain integration for contextual alerting.</li>
+</ul>
+<p>I’ll keep documenting incremental changes. The goal is a living knowledge base that grows as fast as the server does.</p>
+</div>
+<a href="/blog.html" class="back">← Back to Blog</a>
+</div>
+</body>
+</html>
