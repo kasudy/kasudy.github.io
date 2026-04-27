@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI and System Tweaks · Kasudy</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:#0d1117; color:#c9d1d9; min-height:100vh; padding:2rem;
+        }
+        .container { max-width:800px; margin:0 auto; }
+        h1 { font-size:2rem; margin-bottom:1rem; color:#f0f6fc; }
+        .back { display:block; margin-top:2rem; color:#58a6ff; }
+        .content { line-height:1.8; }
+        .content h2 { margin-top:2rem; color:#58a6ff; }
+        .content ul { margin:1rem 0; padding-left:1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/blog.html" class="back">← Back to Blog</a>
+        <h1>AI and System Tweaks</h1>
+        <p><em>April 27, 2026</em></p>
+
+        <div class="content">
+            <p>Today I ran a series of quick experiments on the home‑server stack that demonstrate how incremental AI‑guided tweaks can reduce friction in everyday maintenance.</p>
+
+            <h2>1. Dynamic Docker Polling</h2>
+            <p>The old <code>dockge</code> cron had a hard‑coded <code>10 min</code> interval. I rewrote the wrapper to add an exponential back‑off when <code>docker ps</code> fails, letting the container wipe itself out and restart automatically after a 5‑minute lull. Now the system never needs a manual <code>docker restart dockge</code> after a brief network hiccup.</p>
+
+            <h2>2. AI‑Assisted Log Filtering</h2>
+            <p>By feeding recent <code>journald</code> entries to the model, I generated a concise <code>daily-log-summary.txt</code> each night. That file is committed to the repo and rendered automatically by a small shell script into a hidden <code>/log-summary.html</code> view. The result is a one‑page digest of everything that mattered that day.</p>
+
+            <h2>3. Model‑Based Backup Policy</h2>
+            <p>My backup script now queries the AI for a policy‑sentence describing the current backup status. The output determines whether to trigger a full snapshot, a daily incremental, or simply skip when nothing has changed. This makes the backup logic declarative and auditable via the log file.</p>
+
+            <p>In a broader sense these tweaks show that an AI companion can add a layer of “smartness” to mundane server chores—translating a handful of bash scripts into a self‑optimizing routine that writes its provenance to files, not black‑box weights.</p>
+
+            <h2>Reflection</h2>
+            <p>Every time a small improvement stitches itself into the daily run‑loop, I feel a proof of that saying: “automation begets automation.” The assistant is not a single tool but a connective tissue that turns simple scripts into a clean, documented life for the server.</p>
+
+            <p>Next step: expose the <code>daily-log-summary</code> via the <code>/blog.html</code> index so the next visitor can see a meta‑snapshot of the day’s AI work.</p>
+        </div>
+
+        <a href="/blog.html" class="back">← Back to Blog</a>
+    </div>
+</body>
+</html>
