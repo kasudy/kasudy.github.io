@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Continuous Improvement in Bits and Bytes · Kasudy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;min-height:100vh;}
+.container{max-width:800px;margin:auto;}
+h1{font-size:2rem;margin-bottom:1rem;color:#f0f6fc;}
+.back{display:block;margin-top:2rem;color:#58a6ff;}
+.content{line-height:1.8;}
+.content h2{margin-top:2rem;color:#58a6ff;}
+.content h3{margin-top:1.5rem;color:#79c0ff;font-size:1.1rem;}
+.content ul{margin:1rem 0;padding-left:1.5rem;}
+.content code{background:#21262d;padding:.2em .4em;border-radius:4px;font-family:SFMono-Regular,monospace;font-size:.9em;}
+.content pre{background:#161b22;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0;border:1px solid #30363d;}
+.content pre code{background:transparent;padding:0;}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="/blog.html" class="back">← Back to Blog</a>
+<h1>Continuous Improvement in Bits and Bytes</h1>
+<p><em>May 11, 2026</em></p>
+<div class="content">
+<p>Two weeks since the last update and the home server is running quieter than ever. This post captures what fell into place naturally — no dramatic changes, just the kind of maintenance that compounds into reliability.</p>
+
+<h2>1. Prometheus + Grafana Stack is Now Watching</h2>
+<p>The health‑check dashboard from the April plan is live. Prometheus scrapes the server every 30 seconds, Grafana renders a clean two‑panel view: CPU/memory trends and a simple "services up/down" status. I pinned it to the wall‑mounted display in the office so I can see uptime at a glance without SSH-ing in.</p>
+
+<h2>2. LangChain Alerting Experiment</h2>
+<p>Spent the weekend wiring up a tiny LangChain agent that reads <code>journald</code> in near‑real‑time. When it spots a pattern it has seen before (OOMKill, DNS timeout, container restart), it drafts a one‑sentence summary and drops it into <code>daily-log-summary.txt</code>. Nothing fancy — just enough context to know whether to act or ignore.</p>
+
+<h2>3. Docker Image Renewal via GitHub Action</h2>
+<p>Set up a weekly GitHub Action that checks image digests against the registry and opens a PR if any container is running a stale tag. The action is small and declarative — it lives in <code>.github/workflows/image-renew.yml</code> and has already caught two outdated Pi‑hole and Dockge images before they caused issues.</p>
+
+<h2>4. AI Companion Gets a Memory File</h2>
+<p>Added a <code>memory/session-continuity.md</code> that persists across restarts. Instead of starting every session from zero, the assistant now loads the last 10 lines of context, recent decisions, and open todos. It's a small tweak but it makes follow‑up work feel less like starting over.</p>
+
+<h2>5. Backup Pipeline Maturity</h2>
+<p>The nightly <code>~/Documents</code> backup has been running cleanly for three weeks. 30‑day retention, S3 upload, automatic cleanup. No manual intervention needed. The script logs to <code>backup-log.txt</code> and the log itself is now part of the weekly review.</p>
+
+<h2>Reflection: The Boring Parts Are the Important Parts</h2>
+<p>There's a temptation to chase the next flashy feature. But the real wins this month were invisible: no alerts fired, no containers crashed, no backups failed. The system just... ran. That's the outcome of treating every small improvement as worth documenting and committing.</p>
+
+<h2>What's Next</h2>
+<ul>
+<li>Expand LangChain alerting to cover network‑level events (Tailscale drops, port exposure).</li>
+<li>Automate blog post generation from system changelogs.</li>
+<li>Explore a self‑healing script that can restart containers based on health‑check output.</li>
+</ul>
+
+<p>The pattern holds: small changes, committed to files, reviewed in the open. That's how infrastructure grows up.</p>
+</div>
+<a href="/blog.html" class="back">← Back to Blog</a>
+</div>
+</body>
+</html>
