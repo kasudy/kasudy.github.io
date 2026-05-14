@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Evolving Stack · Kasudy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;min-height:100vh;}
+.container{max-width:800px;margin:auto;}
+h1{font-size:2rem;margin-bottom:1rem;color:#f0f6fc;}
+.back{display:block;margin-top:2rem;color:#58a6ff;}
+.content{line-height:1.8;}
+.content h2{margin-top:2rem;color:#58a6ff;}
+.content h3{margin-top:1.5rem;color:#79c0ff;font-size:1.1rem;}
+.content ul{margin:1rem 0;padding-left:1.5rem;}
+.content code{background:#21262d;padding:.2em .4em;border-radius:4px;font-family:SFMono-Regular,monospace;font-size:.9em;}
+.content pre{background:#161b22;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0;border:1px solid #30363d;}
+.content pre code{background:transparent;padding:0;}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="/blog.html" class="back">← Back to Blog</a>
+<h1>The Evolving Stack</h1>
+<p><em>May 14, 2026</em></p>
+<div class="content">
+<p>Three weeks since the last blog post and the stack has settled into something resembling maturity. This isn't about dramatic overhauls — it's about the small refinements that turn a working system into a reliable one.</p>
+
+<h2>1. Container Orchestration Is Boring (In a Good Way)</h2>
+<p>Dockge has been running for 24 days without a single manual intervention. The weekly image renewal workflow caught two stale containers (Pi-hole and Tailscale) before they became problems. The GitHub Action that opens PRs for outdated images has become my early warning system.</p>
+<p>More interesting: I've started tagging containers with semantic versions instead of using <code>:latest</code>. When a restart happens, I can trace it to a specific deployment rather than wondering "what changed?"</p>
+
+<h2>2. AI Memory That Actually Works</h2>
+<p>The session continuity experiment from the last post evolved. Instead of just loading the last 10 lines, I'm now persisting:</p>
+<ul>
+<li>Recent decisions (with timestamps)</li>
+<li>Open todos and in-progress tasks</li>
+<li>Key system metrics from the last check</li>
+</ul>
+<p>The result: follow-up sessions pick up context without me having to restate it. It's like having a mechanical memory that doesn't get tired.</p>
+
+<h2>3. Prometheus Alerting on My Terms</h2>
+<p>Added alert rules to the monitoring stack. Not the typical "page me at 3am" variety — instead, alerts fire into a local log file that gets picked up by the LangChain journald agent.</p>
+<p>Example: When Pi-hole DNS resolution drops below 95%, the alert writes to <code>/var/log/alerts/dns-degraded.log</code>. The agent notices the pattern, correlates it with container restarts, and adds context to the daily summary.</p>
+
+<h2>4. Backup Pipeline: From Manual to Muscle Memory</h2>
+<p>The nightly backup script is now in its fourth week of flawless operation. Key changes:</p>
+<ul>
+<li>Added checksum verification (SHA256) to catch corruption early)</li>
+<li>Rotated to 30-day retention instead of 14</li>
+<li>Added a "backup health" metric to Prometheus</li>
+</ul>
+<p>I can now answer "when was the last successful backup?" without SSH-ing into anything.</p>
+
+<h2>5. Blog Automation: The Meta Layer</h2>
+<p>This blog post is the result of a new experiment: a template-driven generator that pulls content from:</p>
+<ul>
+<li><code>MEMORY.md</code> for long-term reflections</li>
+<li>Recent <code>memory/YYYY-MM-DD.md</code> files for daily updates</li>
+<li>Git commit messages for technical changes</li>
+</ul>
+<p>It's still rough around the edges, but the goal is to turn system logs into readable narratives without manual transcription.</p>
+
+<h2>Reflection: The Stack as a Living Document</h2>
+<p>What strikes me is how the system is starting to document itself. Metrics, logs, commit messages, and memory files form a feedback loop:</p>
+<ol>
+<li>Something changes</li>
+<li>The change gets logged somewhere</li>
+<li>An agent notices and summarizes it</li>
+<li>The summary becomes tomorrow's context</li>
+</ol>
+<p>This feels like the infrastructure equivalent of muscle memory — the system learns from its own activity.</p>
+
+<h2>What's Next</h2>
+<ul>
+<li>Expand the blog generator to include system metrics charts</li>
+<li>Add a "self-healing" script that can restart containers based on health-check output</li>
+<li>Wire up family OSINT monitoring to the alerting pipeline</li>
+</ul>
+
+<p>The stack isn't done evolving. But it's getting boring in the best way — nothing breaks, nothing needs manual fixing, and the logs tell a coherent story.</p>
+</div>
+<a href="/blog.html" class="back">← Back to Blog</a>
+</div>
+</body>
+</html>
