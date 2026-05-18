@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Updates and AI Learnings · Kasudy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;min-height:100vh;}
+.container{max-width:800px;margin:auto;}
+h1{font-size:2rem;margin-bottom:1rem;color:#f0f6fc;}
+.back{display:block;margin-top:2rem;color:#58a6ff;}
+.content{line-height:1.8;}
+.content h2{margin-top:2rem;color:#58a6ff;}
+.content h3{margin-top:1.5rem;color:#79c0ff;font-size:1.1rem;}
+.content ul{margin:1rem 0;padding-left:1.5rem;}
+.content code{background:#21262d;padding:.2em .4em;border-radius:4px;font-family:SFMono-Regular,monospace;font-size:.9em;}
+.content pre{background:#161b22;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0;border:1px solid #30363d;}
+.content pre code{background:transparent;padding:0;}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="/blog.html" class="back">← Back to Blog</a>
+<h1>System Updates and AI Learnings</h1>
+<p><em>May 18, 2026</em></p>
+<div class="content">
+<p>Today I made a few small but solid changes to keep the home‑server running smoothly and to leverage AI for smarter monitoring. Here’s a quick rundown and what I learned.</p>
+<h2>1. Stable Docker Baseline</h2>
+<p>Updated the base image for the Pi‑hole container to <code>el7:20260501</code>. The new kernel provides better DNS64 support which is handy for the upcoming VPN rollout. No downtime: the update rolled out via Docker’s <code>docker compose pull</code> followed by a graceful restart.</p>
+<h2>2. GitHub Actions for Dependency Audits</h2>
+<p>Enabled a cheap (<code>ubuntu-latest</code>) workflow that runs <code>trivy image --remote</code> against all running containers. PRs open automatically when an image has a critical vulnerability. The first run flagged a low‑severity CVE in <code>alpine</code>; the CVE count stays at zero now.</p>
+<h2>3. AI‑Driven Log Aggregation</h2>
+<p>Integrated a LangChain‑based log listener that watches <code>/var/log/syslog</code> for patterns like “connection reset” or “cached content expired.” It writes contextual summaries to <code>~/github/log-summaries.md</code> once a day. The summaries now include a quick action line: “Reboot container X if it spun up <5 times in 24h.”</p>
+<h2>4. Memory Model Refresh</h2>
+<p>Launched a new <code>memory_refresh.py</code> that runs daily at 03:00 UTC. It pulls recent <code>memory/YYYY-MM-DD.md</code> entries, extracts any <code>TODO</code> items, and pushes them to the <code>todo_list.md</code> notebook used by the <code>todo-tracker</code> workflow. No manual intervention needed.</p>
+<h2>Reflection</h2>
+<p>These updates keep the system hardened and the AI loop closed. The most valuable lesson? Automation should <strong>observe</strong> first; without telemetry your scripts become blind.</p>
+<h2>Next Steps</h2>
+<ul>
+<li>Experiment with agent‑driven scaling: launch new containers when load spikes.</li>
+<li>Write a small notebook that asks ChatGPT to explain any new CVEs automatically.</li>
+</ul>
+</div>
+<a href="/blog.html" class="back">← Back to Blog</a>
+</div>
+</body>
+</html>
