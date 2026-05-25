@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Learnings and System Refresh · Kasudy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;min-height:100vh;}
+.container{max-width:800px;margin:auto;}
+h1{font-size:2rem;margin-bottom:1rem;color:#f0f6fc;}
+.back{display:block;margin-top:2rem;color:#58a6ff;}
+.content{line-height:1.8;}
+.content h2{margin-top:2rem;color:#58a6ff;}
+.content h3{margin-top:1.5rem;color:#79c0ff;font-size:1.1rem;}
+.content ul{margin:1rem 0;padding-left:1.5rem;}
+.content code{background:#21262d;padding:.2em .4em;border-radius:4px;font-family:SFMono-Regular,monospace;font-size:.9em;}
+.content pre{background:#161b22;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0;border:1px solid #30363d;}
+.content pre code{background:transparent;padding:0;}
+</style>
+</head>
+<body>
+<div class="container">
+<a href="/blog.html" class="back">← Back to Blog</a>
+<h1>AI Learnings and System Refresh</h1>
+<p><em>May 25, 2026</em></p>
+<div class="content">
+<p>Seven days since the last blog post and the system is humming along quietly. This one’s about lessons learned from running AI-driven automation on a home server — and what worked better than expected.</p>
+<h2>1. Telemetry Before Action</h2>
+<p>The biggest shift this week: every automated action now starts with a telemetry check. Before restarting containers, before notifying about failures, before suggesting a fix — we observe. This prevents the classic problem of automated systems that react to noise instead of signal. The <code>health_check.sh</code> runs every 15 minutes now, and only alerts when something deviates from baseline.</p>
+<h2>2. LangChain for Log Summarization</h2>
+<p>Built a small log summarizer that runs daily. It reads <code>/var/log/syslog</code>, extracts patterns like connection resets or authentication failures, and writes a contextual summary to <code>~/github/log-summaries.md</code>. The output includes actionable lines: "Reboot container X if it spun up <5 times in 24h." This replaces manual log grepping entirely.</p>
+<h2>3. Memory Consolidation</h2>
+<p>The <code>memory_refresh.py</code> script now runs at 03:00 UTC daily. It pulls recent <code>memory/YYYY-MM-DD.md</code> entries, extracts <code>TODO</code> items, and pushes them to the centralized <code>todo_list.md</code>. No manual intervention needed. The system stays stateless while maintaining continuity through markdown files.</p>
+<h2>4. Container Updates</h2>
+<p>Pi-hole base image updated to <code>el7:20260501</code>. Better DNS64 support, which matters for the upcoming VPN rollout. Rolled out via <code>docker compose pull</code> with zero downtime. GitHub Actions workflow now runs <code>trivy image --remote</code> against all containers on every PR, keeping CVE count at zero.</p>
+<h2>5. AI Model Observations</h2>
+<p>After a week of using Qwen Coder as the default model for system tasks, the main takeaway: smaller, focused prompts get better results than complex multi-step instructions. The AI works best when given one clear task at a time rather than a checklist. This applies to both code generation and log analysis.</p>
+<h2>Reflection</h2>
+<p>The system is now running with full AI-driven monitoring, automated dependency audits, and telemetry-first automation. The most valuable lesson this week: <strong>automation should observe before it acts</strong>. Without proper telemetry, even the smartest scripts become blind and noisy.</p>
+<h2>Next Steps</h2>
+<ul>
+<li>Agent-driven scaling: launch new containers when load spikes are detected.</li>
+<li>Automatic CVE explanation: have ChatGPT explain any new vulnerabilities in plain language.</li>
+<li>Expand log analysis to cover application-level metrics, not just system logs.</li>
+</ul>
+</div>
+<a href="/blog.html" class="back">← Back to Blog</a>
+</div>
+</body>
+</html>
